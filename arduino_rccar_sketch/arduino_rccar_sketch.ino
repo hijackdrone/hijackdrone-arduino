@@ -1,6 +1,6 @@
 #include <ArduinoJson.h>
 
-const int capacity = JSON_OBJECT_SIZE(3) + 2*JSON_OBJECT_SIZE(1);
+const int capacity = JSON_OBJECT_SIZE(3) + 3*JSON_OBJECT_SIZE(1);
 StaticJsonDocument<capacity> doc;
 
 int led=13;
@@ -14,25 +14,28 @@ void setup() {
   Serial.begin(9600);
   pinMode(led,OUTPUT);
 }
-char init(char arr[]){
+char init(char arr[],int len){
   int i;
-  for(i=0;i<200;i++){
+  for(i=0;i<len;i++){
     arr[i]=0;
   }
-}dddd
+}
 void loop() {
   // put your main code here, to run repeatedly:
   if(Serial.available() > 0){
     incomingByte = Serial.read();
-    if(incomingByte==10){
+    if(incomingByte==13){
+      data[i++]='\0';
       Serial.println("fin");
       i=0;
       DeserializationError err = deserializeJson(doc, data);
       if(err){
         Serial.print("err");
+        digitalWrite(led,HIGH);
+        delay(1000);
+        digitalWrite(led,LOW);
       }else{
         char move=doc["to"];
-        Serial.println(move);
         switch(move){
           case 'f': //front
             digitalWrite(led,HIGH);
@@ -48,15 +51,18 @@ void loop() {
             digitalWrite(led,LOW);
             break;
           default: //stop
-            digitalWrite(tx,HIGH);
+            digitalWrite(led,HIGH);
+            delay(100);
+            digitalWrite(led,LOW);
             break;
         }
       }
-      init(data);
+      init(data,i);
     }
     else{
       data[i++]=incomingByte;
     }
     Serial.print(incomingByte);
+    Serial.print(' ');
   }
 }
